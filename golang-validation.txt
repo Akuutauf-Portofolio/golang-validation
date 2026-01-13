@@ -1,0 +1,97 @@
+pengenalan validation
+- saat membuat apliaksi, validasi adalah salah satu hal yang selalu dibuat
+- validasi dilakukan untuk memastikan bahwa data yang diproses sudah benar
+- validasi adalah sesuatu yang wajib dilakukan saat pembuatan aplikasi, agar kesalahan pada data bisa ditemukan secepat mungkin sebelum data tersebut di proses
+
+tempat melakukan validasi
+- validasi sering dilakukan di banyak bagian dalam aplikasi, seperti
+- web, seperti validasi request dari pengguna
+- bussiness logic, validasi data
+- database, validasi constraint
+- beberapa bagian, kadang menggunakan validasi yang sama. oleh karena itu pembuatan validasi secara manual sangat memakan waktu, dan kesalahan sedikit bisa menyebabkan validasi tidak konsisten
+
+kenapa butuh validasi?
+- untuk memastikan request atau data yang dikirim oleh penguna sudah sesuai dengan yang kita inginkan
+- jangan percaya input dari user / never trust user input
+
+manual validation
+- saat kita melakukan validasi, biasanya kita akan melakukan validasi secara manual
+- rata rata, validasi manual akan menggunakan if statement
+- semakin banyak validasi yang diperlukan, semakin banyak if statement yang harus dibuat (manual)
+
+validation library
+- penggunaan library untuk melakukan validasi sangat direkomendasikan
+- hal ini agar kode validasi lebih mudah, rapi dan juga sama antar programmer
+- ada banyak sekali library yang bisa kita gunakan untuk mempermudah dalam pembuatan validasi di kode program kita 
+- salah satunya adalah library validator package
+
+validator package
+- salah satu library yang banyak digunakan untuk membantu melakukan validation adalah validator package
+- validator package adalah opensource library untuk melakukan validation di golang
+- validator package memiliki banyak sekali fitur yang bisa kita gunakan untuk mempermudah kita melakukan validasi
+- referensi library : https://github.com/go-playground/validator
+- install validator package : go get github.com/go-playground/validator
+- install validator package (versi 10) : go get github.com/go-playground/validator/v10
+
+validation struct
+- validator package di desain agar thread safe (di dalam go routine) dan digunakan sebagai object singleton (cukup buat satu object saja)
+- validator package akan melakukan cache informasi seperti rules, tags, dan lain lain yang berhubungan dengan validation kita
+- cache adalah menyimpan informasi di memory, sehingga bisa digunakan lagi tanpa harus melakukan eksekusi kode program lagi, hal ini akan mempercepat proses
+- jika kita selalu membuat object baru, maka keuntungan cache tidak bisa didapatkan
+- package validator merepresentasikan object untuk validationnya dalam struct bernama validate di pakage validator
+
+validasi variable
+- sekarang akan mencoba untuk menerapkan validasi terhadap variabel menggunakan validator package
+- saat melakukan validasi, biasanya kita akan melakukan validasi terhadap variabel yang tersedia, baik itu variabel yang terdapat di struct atau function parameter
+- untuk melakukan validasi variabel, kita bisa gunakan method :
+Validate.Var(variabele, tag)
+Validate.VarCtx(ctx, variabele, tag)
+
+validator tag
+- validator package menggunakan konsep tag untuk menyebutkan validation yang ingin digunakan
+- setiap jenis validation, memiliki nama tag masing-masing
+- contoh validasi bahwa sebuah value harus ada isinya, bukan default value, misal kita bisa gunakan tag "required", jika number pastikan bukan default number nya adalah 0, dan jika string bukan default value string " " (kosong), dan jika array/slice bukan default array/slice nya [] (kosong)
+
+validasi dua variabel
+- kadang, ada kasus dimana kita ingin melakukan validasi untuk membandingkan dua buah variabel
+- misal kita mau memastikan variable password dan confirmPassword harus sama, kita bisa gunakan tag 'eqfield'
+- untuk melakukan validasi 2 variabel, kita bisa gunakan method :
+Validate.VarWithValue(first, second, tag)
+Validate.VarWithValueCtx(ctx, first, second, tag)
+
+baked-in validations
+- validator package sudah menyediakan banyak sekali validation yang biasanya kita butuhkan, dari yang sederhana seperti required (string tidak boleh kosong), email (format data harus email yang valid), dan lain lain
+- ada banyak sekali baked-in validation yang sudah tersedia, dan kita hanya perlu menggunakan nama tag nya saja
+- referensi : https://pkg.go.dev/github.com/go-playground/validator/v10#readme-baked-in-validations
+
+multiple tag validation
+- tag pada validation bisa lebih dari satu, kita bisa tambahkan koma (,) dan diikuti dengan tag selanjutnya
+
+tag parameter 
+- validator package, mendukung penggunaan parameter ketika menggunakan tag
+- ini sangat berguna pada kasus validasi yang memang butuh data parameter, contohnya min, max, length dan lain lain
+- untuk menggunakan parameter, kita bisa langsung menggunakan tanda sama dengan (=) setelah nama tag, dan diikuti dengan nilai parameternya
+
+validasi struct
+- selain melakukan validasi variabel, validator package juga bisa digunakan untuk melakukan validasi terhadap struct
+- dengan begitu kita bisa langsung melakukan validasi terhadap semua field yang terdapat pada struct tersebut
+- tag untuk validasi, bisa kita tambahkan dengan menambah relfection tag di struct field-nya dengan tag validate
+
+error
+- saat kita melakukan validasi, validator package akan mengembalikan data error
+- jika eror tersebut bernilai nil, artinya semua data valid, tidak terjadi validation error
+- namun jika tidak nil, artinya terdapat data yang error
+
+validation errors
+- kita tahu bahwa error adalah kontrak interface dari golang untuk membuat error
+- validator package sendiri sebenarnya meiliki detail struct untuk implementasi error ini, yaitu ValidationErrors
+- kita bisa melakukan konversi ke ValidationErrors ketika terjadi validation error
+- terdapat banyak sekali informasi yang bisa kita ambil dari ValidationErrors
+- ValidationErrors sendiri sebenarnya adalah alias untuk []FieldError (interface)
+
+validasi cross field
+- sebelumnya kita sudah mengetahui validator package memiliki validation khusus untuk validasi dua variabel
+- validation tersebut juga bisa digunakan untuk validasi cross field jika di dalam struct
+- caranya kita bisa menggunakan validation tag yang sama, namun perlu disebutkan field kedua-nya
+- misal pada password, kita bisa tambahkan 'validate:eqfield=ConfirmPassword'
+
