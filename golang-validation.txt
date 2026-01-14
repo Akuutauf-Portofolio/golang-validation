@@ -95,3 +95,63 @@ validasi cross field
 - caranya kita bisa menggunakan validation tag yang sama, namun perlu disebutkan field kedua-nya
 - misal pada password, kita bisa tambahkan 'validate:eqfield=ConfirmPassword'
 
+validasi nested struct
+- secara default saat kita membuat struct yang berisikan field struct lainnya
+- validator package akan melakukan validasi terhadap field struct tersebut secara otomatis
+
+validasi collection
+- tidap seperti tipe data struct, jika kita memiliki field dengan tipe data collection seperti Array, slice atau map, secara default validator package tidak akan melakukan validasi terhadap data-data yang terdapat di dalam collection tersebut
+- namun, jika kita ingin melakukan validasi semua data yang terdapat di collection-nya, kita bisa tambahkan tag 'dive'\
+
+basic collection
+- bagaimana jika data collection nya adalah tipe data yang bukan struct, misal string[]?
+- kita bisa tambahkan validation nya langsung setelah menambahkan tag dive 
+- contoh pada field Hobbies []String, kita bisa tambahkan tag dive, required, min=1. Artinya tiap string di []string harus required dan minimalnya adalah 1 karakter
+
+validasi map 
+- selain collection array/slice, kita juga bisa melakukan validasi terhadap field Map
+- karena dalam map terdapat key dan value, kita bisa menggunakan tag 'dive' untuk key dan tag 'dive' lagi untuk value
+- namun khusus untuk key, kita harus tandai dengan tag 'keys' dan diakhiri dengan 'endkeys'
+
+validasi basic map
+- jika ingin menambah validasi, pada attribute yang bertipe data map dengan tipe data biasa, caranya sama perlu menambahkan tag keys dan endkeys
+- contoh field : Wallet map[string]int dengan tag dive, keys, required, endkeys, required, gt=0 : artinya key string required, dav value required dan lebih dari 0 (karena tipe data value nya int)
+- karena value bukanlah struct, jadi kita tidak perlu menambahkan tag dive lagi pada value
+
+alias tag
+- pada beberaa kasus, kita sering menggunakan beberapa tag validation yang sama untuk field yang berbeda
+- validator package memiliki fitur untuk menambahkan alias, yaitu nama tag baru untuk tag lain, bisa satu atau lebih tag lain
+- kita bisa meregistrasi nama alias untuk tag baru dengan menggunakan method :
+Validate.RegisterAlias(alias, tag)
+
+custom validation
+- bagaimana jika validasi yang kita butuhkan tidak tersedia di baked in validator package?
+- kita bisa membuat custom validation sendiri, dengan membuat function yang menerapkan parameter validator.FieldLevel, lalu registrasikan ke validate menggunakan method :
+Validate.RegisterValidation(tag, function)
+
+field level 
+- merupakan parameter dari validation function nanti yang kita buat (custom validation)
+- field level berisikan informasi relfection seperti field value, name dan lain lain
+
+custom validation parameter
+- di baked in validation, beberapa validation memiliki parameter, misalnya min=10
+- kita juga bisa mengambil informasi nilai parameter nya di FieldLevel.Param()
+- ini sangat cocok ketika kita membuat validation yang memang membutuhkan parameter tambahkan
+
+or rule
+- pada beberapa kasus, kadang kita ingin membuat kondisi OR pada validation
+- misal sebuah field boleh email, atau nomor telepon misalnya, artinya validasinya tidak bisa menggunakan tag email maupun numeric (karena bertentangan)
+- sehingga kita bisa menggunakan operator logika dengan menambahkan '|' (pipe) sebagai pemisah untuk menandakan bawha itu adalah OR
+- defaultnya beberap tag validasi yang diberikan pada field, jika diberikan koma ',' (koma), maka artinya adalah AND
+
+custom validation cross field
+- saat membuat custom validation, parameter FieldLevel juga bisa digunakan untuk mendapatkan value kedua secara langsung dari struct
+- kita bisa menggunakan method FieldLevel.GetStructFieldOK2()
+- method GetStructFieldOK2() secara otomatis akan menggunakan param sebagai nama field di structnya
+- misal ketika kita gunakan tag xxx=Yyy, maka GetStructFieldOK2() akan mengembalikan field Yyy di dalam structnya
+
+struct level validation
+- kadang ada kasus untuk melakukan validasi butuh kombinasi lebih dari dua field
+- sampai saat ini, kita hanya membuat validasi untuk single field, atau cross field
+- validator package mendukung pembuatan validasi di level struct, namun kita perlu membuat validaton function menggunakan parameter struct level
+- kita bisa meregistrasi kan validation nya menggunakan method Validate.RegisterStructValidation()
